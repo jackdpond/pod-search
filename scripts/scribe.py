@@ -19,19 +19,12 @@ def ms2hms(ms):
     secs = seconds % 60
     return f"{hours:02}:{minutes:02}:{secs:02}"
 
-class Scribe:
+class Episode:
 
-    def __init__(self, episode_title, series_title, dimension=1536, embedding_model='text-embedding-3-small'):
+    def __init__(self, episode_title, series_title):
         self.assembly_api_key = 0
         self.episode_title = episode_title
         self.series_title = series_title
-
-        self.dimension = dimension
-        self.index = faiss.IndexFlatL2(dimension)
-        self.utterances = []
-
-        self.client = OpenAI()
-        self.embedding_model = embedding_model
 
 
     def transcribe(self, audio_file, speaker_labels=True, speakers_expected=2, speaker_map={'A': 'A', 'B': 'B', 'C': 'C'}, verbose=False):
@@ -142,6 +135,17 @@ class Scribe:
 
         print(f"PDF created: {filename}")
 
+
+class Index:
+
+    def __init__(self, dimension=1536, embedding_model='text-embedding-3-small'):
+        self.dimension = dimension
+        self.index = faiss.IndexFlatL2(dimension)
+        self.utterances = []
+
+        self.client = OpenAI()
+        self.embedding_model = embedding_model
+
     def add_batch_embeddings(self, texts, batch_size=100):
         for i in range(0, len(texts), batch_size):
             batch = texts[i: i+batch_size]
@@ -151,13 +155,13 @@ class Scribe:
 
         print('Created and added embeddings to index')
 
-    def add_to_index(self, batch_size = 100):
+    def add_episode(self, episode: Episode, batch_size=100):
         documents = [{'text': utterance['text'],
                             'start': utterance['start'],
                             'end': utterance['end'],
-                            'series': self.series_title,
-                            'episode': self.episode_title}
-                            for utterance in self.transcript]
+                            'series': episode.series_title,
+                            'episode': episode.episode_title}
+                            for utterance in episode.transcript]
         self.utterances.extend(documents)
 
         texts = [doc['text'] for doc in documents]
