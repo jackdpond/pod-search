@@ -1,4 +1,4 @@
-from scribe2 import Episode, Index
+from scribe import Episode, Index
 
 from dotenv import load_dotenv
 import os
