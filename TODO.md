@@ -3,3 +3,5 @@
 3. Index() should be able to take a directory as input and create episode objects from each file.
 4. Add functionality to download from urls as well.
 5. Add docstrings and safety measures everywhere. Especially on API calls.
+6. Maybe I want to accept a config file that organizes everything more easily, and adds everything from the config file containing paths. Have podcast name, series/season name, episode name.
+7. Or different kinds of objects? That the index keeps track of? Podcasts, series, episodes? Each is like a directory?
