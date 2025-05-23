@@ -5,7 +5,7 @@ def search():
     parser = argparse.ArgumentParser()
     parser.add_argument('search', type=str, help='String to search')
     parser.add_argument('-k', '--k_nearest_neighbors', type=int, default=5, help='How many of the nearest results to print out')
-    parser.add_argument('-f', '--filename', default='database/vector_db', help='Path to the Vector Database files')
+    parser.add_argument('-f', '--filename', default='database/exodus_way_db', help='Path to the Vector Database files')
     args = parser.parse_args()
 
     index = Index()
