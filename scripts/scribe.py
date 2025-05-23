@@ -1,5 +1,6 @@
 import assemblyai as aai
 import json
+import os
 
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -19,21 +20,27 @@ def ms2hms(ms):
     secs = seconds % 60
     return f"{hours:02}:{minutes:02}:{secs:02}"
 
+def clean_path_name(filename):
+    filename = filename.replace('-', ' ').replace('_', ' ').replace('/', ' ').split('.')[0]
+    return filename
+
 class Episode:
 
-    def __init__(self, episode_title, series_title):
+    def __init__(self, episode_title, series_title, audio_file, speaker_labels=True, speakers_expected=0, speaker_map={'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E', 'F':'F', 'G': 'G'}, verbose=False):
         self.assembly_api_key = 0
         self.episode_title = episode_title
         self.series_title = series_title
 
-
-    def transcribe(self, audio_file, speaker_labels=True, speakers_expected=2, speaker_map={'A': 'A', 'B': 'B', 'C': 'C'}, verbose=False):
-        aai.settings.api_key = self.api_key
         aai.settings.http_timeout = 120.0
 
-        config = aai.TranscriptionConfig(speech_model=aai.SpeechModel.best, 
-                                         speaker_labels=speaker_labels, 
-                                         speakers_expected=speakers_expected)
+        if speakers_expected > 0:
+            config = aai.TranscriptionConfig(speech_model=aai.SpeechModel.best, 
+                                            speaker_labels=speaker_labels, 
+                                            speakers_expected=speakers_expected)
+        else:
+            config = aai.TranscriptionConfig(speech_model=aai.SpeechModel.best, 
+                                speaker_labels=speaker_labels)
+
 
         transcriber = aai.Transcriber(config=config).transcribe(audio_file)
 
@@ -58,6 +65,10 @@ class Episode:
             utterance['speaker'] = speaker_map[utterance['speaker']]
         
     def save_as_json(self, destination):    
+        directory, _ = os.path.split(destination)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
         with open(destination, "w") as file:
             json.dump(self.transcript, file, indent=4)
 
@@ -66,6 +77,10 @@ class Episode:
 
     def save_as_pdf(self, destination):
         # Set up the PDF file
+        directory, _ = os.path.split(destination)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
         filename = destination
         document = SimpleDocTemplate(filename, pagesize=letter)
 
@@ -137,6 +152,7 @@ class Episode:
 
 
 class Index:
+    aai.settings.api_key = os.getenv("ASSEMBLY_API_KEY")
 
     def __init__(self, dimension=1536, embedding_model='text-embedding-3-small'):
         self.dimension = dimension
@@ -168,6 +184,35 @@ class Index:
         self.add_batch_embeddings(texts, batch_size)
 
         print("Index and utterances initialized.")
+
+    def add_series(self, dir_path, batch_size=100, speaker_map={'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E', 'F':'F', 'G': 'G'}, transcribe=False, transcription_dir=None):
+        series_title = clean_path_name(dir_path)
+        for root, dirs, files in os.walk(dir_path):
+            # Do not enter subdirectories
+            if dirs:
+                raise ValueError(f"Subdirectories found: {dirs}")
+            
+            for audio_file in files:
+                print(f'Processing: {audio_file}')
+                if not audio_file.lower().endswith('.mp3'):
+                    raise ValueError(f"Non-MP3 file found: {audio_file}")
+                
+                episode_title = clean_path_name(audio_file)
+                print(f'Series: {series_title}, Episode: {episode_title}')
+                audio_file_path = os.path.join(dir_path, audio_file)
+                print(f"Path: {audio_file_path}")
+                new_episode = Episode(episode_title, series_title, audio_file_path, speaker_map=speaker_map)
+
+                if transcribe:
+                    if not transcription_dir:
+                        transcription_dir = f'transcripts'
+                    transcript_file_path = audio_file_path.replace('mp3', 'pdf')
+                    transcript_output_path = os.path.join(transcription_dir, transcript_file_path)
+                    new_episode.save_as_pdf(transcript_output_path)
+
+                self.add_episode(new_episode, batch_size=batch_size)
+    
+            break
 
     def search(self, query, k=5, verbose=True):
         query_embedding = self.client.embeddings.create(input=query, model=self.embedding_model).data[0].embedding
