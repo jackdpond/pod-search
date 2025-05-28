@@ -185,24 +185,45 @@ class Index:
 
         print("Index and utterances initialized.")
 
-    def add_series(self, dir_path, batch_size=100, speaker_map={'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E', 'F':'F', 'G': 'G'}, transcribe=False, transcription_dir=None):
-        series_title = clean_path_name(dir_path)
-        for root, dirs, files in os.walk(dir_path):
-            # Do not enter subdirectories
-            if dirs:
-                raise ValueError(f"Subdirectories found: {dirs}")
-            
-            for audio_file in files:
-                print(f'Processing: {audio_file}')
-                if not audio_file.lower().endswith('.mp3'):
-                    raise ValueError(f"Non-MP3 file found: {audio_file}")
+    def add_series(self, download_path, batch_size=100, speaker_map={'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E', 'F':'F', 'G': 'G'}, transcribe=False, transcription_dir=None):
+        if os.path.isdir(download_path):
+            series_title = clean_path_name(download_path)
+            for root, dirs, files in os.walk(download_path):
+                # Do not enter subdirectories
+                if dirs:
+                    raise ValueError(f"Subdirectories found: {dirs}")
                 
-                episode_title = clean_path_name(audio_file)
-                print(f'Series: {series_title}, Episode: {episode_title}')
-                audio_file_path = os.path.join(dir_path, audio_file)
-                print(f"Path: {audio_file_path}")
-                new_episode = Episode(episode_title, series_title, audio_file_path, speaker_map=speaker_map)
+                for audio_file in files:
+                    print(f'Processing: {audio_file}')
+                    if not audio_file.lower().endswith('.mp3'):
+                        raise ValueError(f"Non-MP3 file found: {audio_file}")
+                    
+                    episode_title = clean_path_name(audio_file)
+                    print(f'Series: {series_title}, Episode: {episode_title}')
+                    audio_file_path = os.path.join(download_path, audio_file)
+                    print(f"Path: {audio_file_path}")
+                    new_episode = Episode(episode_title, series_title, audio_file_path, speaker_map=speaker_map)
 
+                    if transcribe:
+                        if not transcription_dir:
+                            transcription_dir = f'transcripts'
+                        transcript_file_path = audio_file_path.replace('mp3', 'pdf')
+                        transcript_output_path = os.path.join(transcription_dir, transcript_file_path)
+                        new_episode.save_as_pdf(transcript_output_path)
+
+                    self.add_episode(new_episode, batch_size=batch_size)
+                break
+        elif download_path.split('.')[1] == 'txt':
+            series_title = clean_path_name(download_path.split('.')[0])
+            with open(download_path, 'r') as file:
+                lines = file.readlines()
+            
+            for line in lines:
+                episode_info = line.split(',')
+                if len(episode_info) != 2:
+                    raise ValueError(f'lines in the download_info .txt file must have two items each \n Your line is {line}')
+                episode_title, download_url = episode_info[0],  episode_info[1]
+                new_episode = Episode(episode_title, series_title, download_url, speaker_map=speaker_map)
                 if transcribe:
                     if not transcription_dir:
                         transcription_dir = f'transcripts'
@@ -210,9 +231,9 @@ class Index:
                     transcript_output_path = os.path.join(transcription_dir, transcript_file_path)
                     new_episode.save_as_pdf(transcript_output_path)
 
-                self.add_episode(new_episode, batch_size=batch_size)
-    
-            break
+                self.add_episode(new_episode, batch=batch_size)
+        else:
+            raise ValueError(f'download_path must be directory or .txt file instead of : {download_path}')
 
     def search(self, query, k=5, verbose=True):
         query_embedding = self.client.embeddings.create(input=query, model=self.embedding_model).data[0].embedding
