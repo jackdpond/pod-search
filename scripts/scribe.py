@@ -24,6 +24,10 @@ def clean_path_name(filename):
     filename = filename.replace('-', ' ').replace('_', ' ').replace('/', ' ').split('.')[0]
     return filename
 
+def make_path_name(filename):
+    filename = filename.replace(' ', '_')
+    return filename
+
 class Episode:
 
     def __init__(self, episode_title, series_title, audio_file, speaker_labels=True, speakers_expected=0, speaker_map={'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E', 'F':'F', 'G': 'G'}, verbose=False):
@@ -48,6 +52,10 @@ class Episode:
             raise RuntimeError(f"Transcription failed: {transcriber.error}")
         
         transcript = list()
+
+        # Handle case of transcriber.utterances being None
+        if not transcriber.utterances:
+            raise ValueError("utterances attribute of transcriber object is None")
         for utterance in transcriber.utterances:
             transcript.append({"speaker": speaker_map[utterance.speaker],
                           "text": utterance.text,
@@ -227,11 +235,11 @@ class Index:
                 if transcribe:
                     if not transcription_dir:
                         transcription_dir = f'transcripts'
-                    transcript_file_path = audio_file_path.replace('mp3', 'pdf')
+                    transcript_file_path = make_path_name(episode_title) + '.pdf'
                     transcript_output_path = os.path.join(transcription_dir, transcript_file_path)
                     new_episode.save_as_pdf(transcript_output_path)
 
-                self.add_episode(new_episode, batch=batch_size)
+                self.add_episode(new_episode, batch_size=batch_size)
         else:
             raise ValueError(f'download_path must be directory or .txt file instead of : {download_path}')
 
