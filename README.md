@@ -101,6 +101,38 @@ cd scripts/
 python3 search.py 'Type your own query here!' --filename <path/to/vector/database> --k-nearest-neighbors <how many results to display>
 ```
 
+For example, running the following command in the right directory returns the search results printed below the command.
+**Command**
+```bash
+python3 search.py 'Type your own query here!' --filename <path/to/vector/database> --k-nearest-neighbors <how many results to display>
+```
+**Results**
+```bash
+Loaded Vector Database from database/exodus_way_db.index and database/exodus_way_db.index
+Query embedding obtained
+Search completed
+The Exodus Way: How Did Israel End Up in Egypt? at 00:51:24
+But then when you make the Exodus story the big narrative and you realize that God's working with humans that are just compromised, then there is no hero and there is no bad guy. Everyone is kind of in on it.
+Similarity: 0.4978547692298889
+-------------------------------------------------------------------------------
+The Exodus Way: The New Pharaohs of Joshua and Judges at 00:36:17
+But Israel is such an imperfect, flawed tool themselves. And that's when you hear the other main theme of these stories, which is with Rahab and the Achan story, which.
+Similarity: 0.49064210057258606
+-------------------------------------------------------------------------------
+The Exodus Way: How Did Israel End Up in Egypt? at 00:49:46
+Of their just oppression and bad decisions and scheming. And then there's this kind of underlying theme that you're showing us, which is the complication of God attaching himself to a family who's not going to always make the right decisions.
+Similarity: 0.4745718538761139
+-------------------------------------------------------------------------------
+The Exodus Way: Israel’s Deliverance and the Song of the Sea at 00:00:45
+God will accept a blameless representative who stands over a house and look on that house as a group of people that are right with me in the midst of a land that's full of people who are not right with me. So that's the first rescue, rescue from death.
+Similarity: 0.4680551588535309
+-------------------------------------------------------------------------------
+The Exodus Way: How Did Israel End Up in Egypt? at 00:01:51
+The story of Abraham is extremely nuanced in portraying the relationship that God has with his people. Look at the moral complexity of even God's involvement in human history. If God makes promises to people, then he has to work with the people as he finds them.
+Similarity: 0.4671679437160492
+-------------------------------------------------------------------------------
+```
+
 ## Use of AI in this project
 While I am not opposed to using AI to code and develop, I decided to use AI minimally to build this tool. I used ChatGPT for advice while choosing to use an AI transcription service and a vector database package, ultimately deciding on Assembly AI and FAISS, respectively.
 
