@@ -35,7 +35,7 @@ class Episode:
         self.episode_title = episode_title
         self.series_title = series_title
 
-        aai.settings.http_timeout = 120.0
+        aai.settings.http_timeout = 240.0
 
         if speakers_expected > 0:
             config = aai.TranscriptionConfig(speech_model=aai.SpeechModel.best, 
@@ -231,7 +231,7 @@ class Index:
                 if len(episode_info) != 2:
                     raise ValueError(f'lines in the download_info .txt file must have two items each \n Your line is {line}')
                 episode_title, download_url = episode_info[0],  episode_info[1]
-                new_episode = Episode(episode_title, series_title, download_url, speaker_map=speaker_map)
+                    print(e)
                 if transcribe:
                     if not transcription_dir:
                         transcription_dir = f'transcripts'
