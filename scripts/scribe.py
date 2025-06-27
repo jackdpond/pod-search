@@ -193,7 +193,12 @@ class Index:
 
         print("Index and utterances initialized.")
 
-    def add_series(self, download_path, batch_size=100, speaker_map={'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E', 'F':'F', 'G': 'G'}, transcribe=False, transcription_dir=None):
+    def add_series(self, 
+                   download_path, 
+                   batch_size=100, 
+                   speaker_map={'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E', 'F':'F', 'G': 'G'}, 
+                   transcribe=False, 
+                   transcription_dir=None):
         if os.path.isdir(download_path):
             series_title = clean_path_name(download_path)
             for root, dirs, files in os.walk(download_path):
@@ -231,7 +236,14 @@ class Index:
                 if len(episode_info) != 2:
                     raise ValueError(f'lines in the download_info .txt file must have two items each \n Your line is {line}')
                 episode_title, download_url = episode_info[0],  episode_info[1]
+
+                try:
+                    new_episode = Episode(episode_title, series_title, download_url, speaker_map=speaker_map)
+                except RuntimeError as e:
+                    print(f"{episode_title} failed to load due to Runtime Error")
                     print(e)
+                    continue
+                
                 if transcribe:
                     if not transcription_dir:
                         transcription_dir = f'transcripts'
@@ -243,6 +255,37 @@ class Index:
         else:
             raise ValueError(f'download_path must be directory or .txt file instead of : {download_path}')
 
+    def add_podcast(self, 
+                    source_path, 
+                    batch_size=100, 
+                    speaker_map={'A': 'A', 'B': 'B', 'C': 'C', 'D': 'D', 'E': 'E', 'F':'F', 'G': 'G'}, 
+                    transcribe=False, 
+                    transcription_dir=None):
+        if not transcription_dir:
+            transcription_dir = make_path_name(source_path)
+        os.makedirs(transcription_dir, exist_ok=True)
+        for _, sub_dirs, filenames in os.walk(source_path):
+            for sub_dir in sub_dirs:
+                sub_dir = make_path_name(sub_dir)
+                sub_transcription_dir = f'{transcription_dir}/{sub_dir}'
+                self.add_series(sub_dir, 
+                                batch_size=batch_size, 
+                                speaker_map=speaker_map, 
+                                transcribe=transcribe, 
+                                transcription_dir=sub_transcription_dir)
+            for filename in filenames:
+                name, extension = filename.split('.')
+                if extension == '.txt':
+                    name = make_path_name(name)
+                    sub_transcription_dir = f'{transcription_dir}/{name}'
+                    self.add_series(filename,
+                                batch_size=batch_size, 
+                                speaker_map=speaker_map, 
+                                transcribe=transcribe, 
+                                transcription_dir=sub_transcription_dir)
+                else:
+                    raise ValueError(f'download_path must be directory or .txt file instead of : {source_path}')
+        
     def search(self, query, k=5, verbose=True):
         query_embedding = self.client.embeddings.create(input=query, model=self.embedding_model).data[0].embedding
         print('Query embedding obtained')
