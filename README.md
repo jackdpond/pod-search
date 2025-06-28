@@ -3,7 +3,7 @@
 This project was born from a specific frustration I had with *my* favorite podcast, from The BibleProject. While they have begun to transcribe their podcasts, I still struggled to find the lines and ideas that I wanted to revisit or share. pod-search uses Assembly AI's automatic transcription API and Facebook's faiss-cpu package to transcribe, embed, and index podcast episodes in order to be able to easily search semantically for the moments you want to revisit.
 
 ## Disclaimer
-This project is very much still in development, and I am actively adding methods and documentation to make this project easier to use.
+This project is very much still in development, and I am actively adding methods and documentation to make this project easier to use. Also, I have no affiliation with the BibleProject.
 
 ## Using pod-search
 I am planning to turn this into an easier-to-use package, but for now users will need to clone this repo in order to use it.
