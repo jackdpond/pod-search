@@ -226,8 +226,8 @@ class Index:
 
                     self.add_episode(new_episode, batch_size=batch_size)
                 break
-        elif download_path.split('.')[1] == 'txt':
-            series_title = clean_path_name(download_path.split('.')[0])
+        elif download_path.split('.')[-1] == 'txt':
+            series_title = clean_path_name(download_path.split('.')[-2])
             with open(download_path, 'r') as file:
                 lines = file.readlines()
             
@@ -238,6 +238,7 @@ class Index:
                 episode_title, download_url = episode_info[0],  episode_info[1]
 
                 try:
+                    print(f'Series: {series_title}, Episode: {episode_title}')
                     new_episode = Episode(episode_title, series_title, download_url, speaker_map=speaker_map)
                 except RuntimeError as e:
                     print(f"{episode_title} failed to load due to Runtime Error")
@@ -275,10 +276,10 @@ class Index:
                                 transcription_dir=sub_transcription_dir)
             for filename in filenames:
                 name, extension = filename.split('.')
-                if extension == '.txt':
+                if extension == 'txt':
                     name = make_path_name(name)
                     sub_transcription_dir = f'{transcription_dir}/{name}'
-                    self.add_series(filename,
+                    self.add_series(os.path.join(source_path, filename),
                                 batch_size=batch_size, 
                                 speaker_map=speaker_map, 
                                 transcribe=transcribe, 
