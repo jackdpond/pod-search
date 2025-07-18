@@ -21,7 +21,7 @@ if __name__ == "__main__":
                    'E': 'E',
                    'F': 'F'}
     bp = Index()
-    bp.add_series('The_Exodus_Way', transcribe=True, speaker_map=speaker_map)
+    bp.add_podcast('../Bible_Project/', speaker_map=speaker_map, transcription_dir="../Bible_Project_transcription")
 
 
     # bp.transcribe('audio_files/BP_An_Exodus_Shaped_Reality.mp3', verbose=True)
