@@ -19,7 +19,9 @@ if __name__ == "__main__":
                    'C': 'C',
                    'D': 'D',
                    'E': 'E',
-                   'F': 'F'}
+                   'F': 'F',
+                   'G': 'G',
+                   'H': 'H'}
     bp = Index()
     bp.add_podcast('../Bible_Project/', speaker_map=speaker_map, transcription_dir="../Bible_Project_transcription")
 
@@ -35,4 +37,4 @@ if __name__ == "__main__":
     # db.load_database('database/vector_db')
     # results = db.search('The way through the desert is the way to God')
 
-    bp.save_database('database/exodus_way_db')
+    bp.save_database('database/bp_db')
